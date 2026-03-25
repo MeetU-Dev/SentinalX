@@ -41,7 +41,7 @@ def detect_new_processes(prev_snapshot, curr_snapshot):
 
 def detect_cpu_spikes(curr_snapshot, threshold=50.0):
     """Detect sustained CPU spikes with state machine - alert only on transitions."""
-    from main import cpu_history, CPU_CONFIRMATION, cpu_alerted
+    from sentinalX import cpu_history, CPU_CONFIRMATION, cpu_alerted
     spikes = []
 
     for pid, proc in curr_snapshot.items():
@@ -174,3 +174,22 @@ def detect_correlated_activity(burst_alerts, cpu_stats):
 
     LOGGER.debug('Correlated activity events detected: %d', len(alerts))
     return alerts
+
+
+def classify_threat(signals):
+    if signals.get("burst") and signals.get("cpu") and signals.get("file"):
+        return "MULTI_VECTOR_BEHAVIOR"
+
+    if signals.get("burst") and signals.get("cpu"):
+        return "PROCESS_SPAWN_ABUSE"
+
+    if signals.get("cpu"):
+        return "CPU_INTENSIVE_PROCESS"
+
+    if signals.get("file"):
+        return "FILE_ACTIVITY_SPIKE"
+
+    if signals.get("burst"):
+        return "PROCESS_SPAWN_BURST"
+
+    return "UNKNOWN"

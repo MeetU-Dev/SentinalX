@@ -189,6 +189,7 @@ graph TB
 
 | Version | Date | Changes |
 |---------|------|---------|
+| v1.11 | 2026-03-25 | Threat classification: categorized alerts (PROCESS_SPAWN_ABUSE, CPU_INTENSIVE_PROCESS, etc.) |
 | v1.10 | 2026-03-25 | Threat scoring engine: multi-signal correlation, parent-based scoring, unified decision layer |
 | v1.9 | 2026-03-25 | CPU state machine: edge detection instead of level detection, alert only on transitions |
 | v1.8 | 2026-03-25 | Noise filtering: CPU stabilization (3-cycle), process filtering, kernel noise elimination, smarter new process alerts |
@@ -204,6 +205,12 @@ graph TB
 ---
 
 ## Changelog
+
+### v1.11 (2026-03-25) - Threat Classification
+- **Added**: `classify_threat()` function for behavioral categorization
+- **Implemented**: Categorized threat alerts (PROCESS_SPAWN_ABUSE, CPU_INTENSIVE_PROCESS, etc.)
+- **Enhanced**: Threat messages now include meaningful behavior labels
+- **Updated**: THREAT event logging includes category field
 
 ### v1.10 (2026-03-25) - Unified Threat Scoring Engine
 - **Added**: Parent-based signal tracking system (burst, cpu, file signals per parent)
