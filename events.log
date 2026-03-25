@@ -1,0 +1,32 @@
+{"time": "2026-03-25T12:33:45Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 13170, "name": "Isolated Web Co", "cpu": 131.4}}
+{"time": "2026-03-25T12:34:29Z", "type": "process_burst", "data": {"type": "process_burst", "parent": 14995, "new_children": [14996, 14997, 14998, 14999, 15000, 15001, 15002], "count": 7}}
+{"time": "2026-03-25T12:34:32Z", "type": "process_burst", "data": {"type": "process_burst", "parent": 1, "new_children": [14996, 14997, 14998, 14999, 15000, 15001], "count": 6}}
+{"time": "2026-03-25T12:34:33Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 14997, "name": "yes", "cpu": 53.0}}
+{"time": "2026-03-25T12:34:33Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 14999, "name": "yes", "cpu": 67.5}}
+{"time": "2026-03-25T12:34:33Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 15001, "name": "yes", "cpu": 58.9}}
+{"time": "2026-03-25T12:34:34Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 14998, "name": "yes", "cpu": 50.8}}
+{"time": "2026-03-25T12:34:35Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 15000, "name": "yes", "cpu": 54.0}}
+{"time": "2026-03-25T12:34:37Z", "type": "THREAT", "data": {"parent": 1, "score": 6, "signals": {"burst": true, "cpu": true, "file": false}}}
+{"time": "2026-03-25T12:34:38Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 14996, "name": "yes", "cpu": 57.2}}
+{"time": "2026-03-25T12:34:42Z", "type": "THREAT", "data": {"parent": 1, "score": 6, "signals": {"burst": true, "cpu": true, "file": false}}}
+{"time": "2026-03-25T12:34:48Z", "type": "THREAT", "data": {"parent": 1, "score": 6, "signals": {"burst": true, "cpu": true, "file": false}}}
+{"time": "2026-03-25T12:35:12Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 2644, "name": "code", "cpu": 75.6}}
+{"time": "2026-03-25T12:35:12Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 15742, "name": "yes", "cpu": 97.9}}
+{"time": "2026-03-25T12:35:45Z", "type": "process_burst", "data": {"type": "process_burst", "parent": 1, "new_children": [16608, 16609, 16610, 16611, 16606, 16607], "count": 6}}
+{"time": "2026-03-25T12:35:51Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 1584, "name": "firefox", "cpu": 51.2}}
+{"time": "2026-03-25T12:35:51Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 13170, "name": "Isolated Web Co", "cpu": 66.2}}
+{"time": "2026-03-25T12:39:43Z", "type": "process_burst", "data": {"type": "process_burst", "parent": 18222, "new_children": [18224, 18225, 18226, 18227, 18228, 18229, 18223], "count": 7}}
+{"time": "2026-03-25T12:39:48Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 1584, "name": "firefox", "cpu": 95.7}}
+{"time": "2026-03-25T12:48:53Z", "type": "process_burst", "data": {"type": "process_burst", "parent": 20408, "new_children": [20409, 20410, 20411, 20412, 20413, 20414, 20415], "count": 7}}
+{"time": "2026-03-25T12:49:33Z", "type": "process_burst", "data": {"type": "process_burst", "parent": 1, "new_children": [21367, 21368, 21369, 21370, 21371, 21372], "count": 6}}
+{"time": "2026-03-25T12:49:36Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 21367, "name": "yes", "cpu": 55.4}}
+{"time": "2026-03-25T12:49:37Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 21369, "name": "yes", "cpu": 73.5}}
+{"time": "2026-03-25T12:49:37Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 21371, "name": "yes", "cpu": 66.3}}
+{"time": "2026-03-25T12:50:54Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 1916, "name": "Isolated Web Co", "cpu": 92.4, "parent_pid": 1680, "parent_name": "forkserver"}}
+{"time": "2026-03-25T12:50:56Z", "type": "new_process", "data": {"type": "new_process", "pid": 21986, "name": "yes", "cpu_percent": 30.9, "rss": 4079616, "ppid": 21957}}
+{"time": "2026-03-25T12:50:56Z", "type": "new_process", "data": {"type": "new_process", "pid": 21987, "name": "yes", "cpu_percent": 27.8, "rss": 4075520, "ppid": 21957}}
+{"time": "2026-03-25T12:50:56Z", "type": "new_process", "data": {"type": "new_process", "pid": 21988, "name": "yes", "cpu_percent": 27.8, "rss": 4075520, "ppid": 21957}}
+{"time": "2026-03-25T12:50:56Z", "type": "new_process", "data": {"type": "new_process", "pid": 21989, "name": "yes", "cpu_percent": 32.2, "rss": 3956736, "ppid": 21957}}
+{"time": "2026-03-25T12:50:56Z", "type": "new_process", "data": {"type": "new_process", "pid": 21990, "name": "yes", "cpu_percent": 31.5, "rss": 3940352, "ppid": 21957}}
+{"time": "2026-03-25T12:50:56Z", "type": "new_process", "data": {"type": "new_process", "pid": 21991, "name": "yes", "cpu_percent": 27.2, "rss": 4075520, "ppid": 21957}}
+{"time": "2026-03-25T12:51:09Z", "type": "cpu_spike", "data": {"type": "cpu_spike", "pid": 1916, "name": "Isolated Web Co", "cpu": 98.1, "parent_pid": 1680, "parent_name": "forkserver"}}
