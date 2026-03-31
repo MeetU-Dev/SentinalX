@@ -236,18 +236,17 @@ sentinalX/                          # Root project directory
 ├── tests/
 │   ├── test_malware.py             # Behavioral test scenarios (V1-style)
 │   ├── test_malware_v2.py          # Deterministic V2 validation
-│   ├── test_phase2.py              # Child attribution unit tests
-│   └── test_phase4.py              # Explanation engine unit tests
+│   └── (legacy phase test files removed)
 ├── events.log                      # JSONL event log (generated)
 ├── test_results.log                # Test harness output (generated)
-└── test_dir/                       # Monitored directory for file activity tests
+└── (runtime) test_dir/             # Created on demand by malware tests
 ```
 
 ## Logs and Artifacts
 
 - **`events.log`**: Append-only JSONL file with all detected events (NEW_PROCESS, CPU_SPIKE, PROCESS_BURST, CORRELATED_ACTIVITY, THREAT)
 - **`test_results.log`**: Runtime output from `runner.sh` validation runs
-- **`test_dir/`**: Target directory for file activity spike detection
+- **`test_dir/`**: Runtime-generated target directory for file activity spike detection
 
 ## Module Architecture
 
