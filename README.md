@@ -183,7 +183,7 @@ python tests/test_malware.py all
 
 Run the complete validation harness:
 ```bash
-python scripts/runner.sh
+bash scripts/runner.sh
 ```
 
 This orchestrates:
