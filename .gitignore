@@ -10,9 +10,7 @@ venv/
 env/
 
 # Runtime/test artifacts
-*.log
-*.txt
-test_dir/
+# (logs and test_dir are kept in repo intentionally)
 
 # OS/editor
 .DS_Store

@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import re
 import signal
 import sys
 import time
@@ -9,6 +10,7 @@ from monitor import collect_process_snapshot
 from detector import detect_new_processes, detect_cpu_spikes, build_process_tree, calculate_parent_cpu_stats, detect_correlated_activity
 from logger import log_event
 from notifier import send_notification
+from context import get_process_context
 
 LOG_FILE = 'events.log'
 CPU_SPIKE_THRESHOLD = 50.0
@@ -168,6 +170,271 @@ def detect_spawn_burst_with_time(parent):
     return False
 
 
+def analyze_children(parent_pid, snapshot, tree):
+    """
+    Analyze child processes of given parent.
+    
+    Returns dict with 'summary' containing list of child groups sorted by CPU descending.
+    Each group: {"name": "...", "count": ..., "cpu_total": ...}
+    """
+    child_pids = tree.get(parent_pid, [])
+    
+    if not child_pids:
+        return {"summary": []}
+    
+    # Group children by process name
+    groups = {}
+    for pid in child_pids:
+        if pid not in snapshot:
+            continue
+        
+        name = snapshot[pid].get("name", "unknown")
+        cpu = snapshot[pid].get("cpu_percent", 0.0)
+        
+        if name not in groups:
+            groups[name] = {"count": 0, "cpu_total": 0.0}
+        
+        groups[name]["count"] += 1
+        groups[name]["cpu_total"] += cpu
+    
+    # Convert to list and sort by CPU descending
+    summary = [
+        {"name": name, "count": data["count"], "cpu_total": data["cpu_total"]}
+        for name, data in groups.items()
+    ]
+    summary.sort(key=lambda x: x["cpu_total"], reverse=True)
+    
+    return {"summary": summary}
+
+
+def analyze_file_activity(file_events, parent_pid, current_time):
+    """
+    Analyze file activity within signal window for temporal correlation.
+    
+    Returns dict with directory, operations, and pattern, or None if no relevant activity.
+    """
+    if not file_events:
+        return None
+    
+    # Filter events within signal window
+    window_start = current_time - SIGNAL_WINDOW
+    recent_events = [
+        e for e in file_events
+        if e[2] >= window_start
+    ]
+    
+    if not recent_events:
+        return None
+    
+    # Group by directory
+    dir_counts = {}
+    operations = []
+    filenames = []
+    
+    for op, path, timestamp in recent_events:
+        directory = os.path.dirname(path)
+        if not directory:
+            directory = "."
+        
+        if directory not in dir_counts:
+            dir_counts[directory] = 0
+        dir_counts[directory] += 1
+        
+        operations.append(op)
+        filenames.append(os.path.basename(path))
+    
+    # Pick directory with most activity
+    if not dir_counts:
+        return None
+    
+    primary_dir = max(dir_counts, key=dir_counts.get)
+    
+    # Determine operation type
+    write_count = operations.count("write")
+    create_count = operations.count("create")
+    total_ops = len(operations)
+    
+    if total_ops == 0:
+        return None
+    elif write_count == total_ops:
+        op_type = "write"
+    elif create_count == total_ops:
+        op_type = "create"
+    else:
+        op_type = "mixed"
+    
+    # Detect pattern
+    pattern = "burst"  # Default
+    
+    # Check for sequential pattern (incrementing numbers or common prefix)
+    if len(filenames) > 1:
+        # Look for numeric patterns or common prefixes
+        numeric_files = []
+        for fname in filenames:
+            # Extract base name without extension
+            base = fname.rsplit('.', 1)[0]
+            numeric_files.append(base)
+        
+        # Check if names share prefix and have numeric suffixes
+        if len(set(numeric_files)) < len(numeric_files):
+            # Some repetition in naming (same prefix)
+            pattern = "sequential"
+        else:
+            # Check for numeric increments
+            numbers = []
+            for fname in numeric_files:
+                # Try to find trailing numbers
+                match = re.search(r'(\d+)$', fname)
+                if match:
+                    numbers.append(int(match.group(1)))
+            
+            if len(numbers) > 1:
+                # Check if numbers are sequential or close
+                numbers.sort()
+                diffs = [numbers[i+1] - numbers[i] for i in range(len(numbers)-1)]
+                if all(d == 1 for d in diffs):
+                    pattern = "sequential"
+    
+    # Ensure proper directory format
+    if not primary_dir.endswith('/'):
+        primary_dir = primary_dir + '/'
+    
+    return {
+        "directory": primary_dir,
+        "operations": op_type,
+        "pattern": pattern
+    }
+
+
+def build_explanation(threat_data):
+    """
+    Build a human-readable explanation from threat data.
+    
+    Returns dict with process, behavior list, reasoning, and conclusion.
+    """
+    # Extract components from threat_data
+    context = threat_data.get("context", {})
+    signals = threat_data.get("signals", {})
+    children_data = threat_data.get("children", {})
+    file_activity = threat_data.get("file_activity")
+    category = threat_data.get("category", "UNKNOWN")
+    severity = threat_data.get("severity", "UNKNOWN")
+    parent_pid = threat_data.get("parent", "unknown")
+    process_name = threat_data.get("process_name", "unknown")
+    
+    # === PROCESS SECTION ===
+    exe = context.get("exe", "unknown")
+    cmdline = context.get("cmdline", [])
+    
+    # Extract just the executable name from full path
+    exe_name = os.path.basename(exe) if exe != "unknown" else "unknown"
+    if exe_name == "unknown" and process_name != "unknown":
+        exe_name = process_name
+    
+    main_script = None
+    if cmdline and isinstance(cmdline, list):
+        for arg in cmdline[1:]:
+            arg_text = str(arg)
+            if arg_text and not arg_text.startswith("-"):
+                main_script = os.path.basename(arg_text)
+                break
+        if not main_script and cmdline:
+            main_script = os.path.basename(str(cmdline[0]))
+    
+    if main_script:
+        process = f"{exe_name} ({main_script})"
+    else:
+        process = f"{exe_name} (PID {parent_pid})"
+    
+    # === BEHAVIOR SECTION (LIST) ===
+    behavior = []
+    children_summary = children_data.get("summary", [])
+    
+    if signals.get("cpu") and signals.get("burst"):
+        if children_summary:
+            top_child = children_summary[0]
+            child_name = top_child.get("name", "unknown")
+            child_count = top_child.get("count", 0)
+            behavior.append(
+                f"Spawned {child_count} {child_name} child processes, with one consuming high CPU"
+            )
+        else:
+            behavior.append("Concurrent process spawning and sustained high CPU usage detected")
+    elif signals.get("cpu"):
+        if children_summary:
+            top_child = children_summary[0]
+            child_name = top_child.get("name", "unknown")
+            behavior.append(f"High CPU driven by {child_name} child processes")
+        else:
+            behavior.append("Sustained high CPU usage detected")
+    
+    if signals.get("burst") and not signals.get("cpu"):
+        if children_summary:
+            top_child = children_summary[0]
+            child_name = top_child.get("name", "unknown")
+            child_count = top_child.get("count", 0)
+            behavior.append(f"Spawned {child_count} {child_name} child processes rapidly")
+        else:
+            behavior.append("Spawned multiple child processes rapidly")
+    
+    if file_activity:
+        directory = file_activity.get("directory", "unknown")
+        pattern = file_activity.get("pattern", "unknown")
+        operations = file_activity.get("operations", "unknown")
+        if operations == "write":
+            op_text = "file writes"
+        elif operations == "create":
+            op_text = "file creations"
+        else:
+            op_text = "file operations"
+        behavior.append(f"Performed rapid {pattern} {op_text} in {directory}")
+    
+    # === REASONING SECTION ===
+    burst = signals.get("burst", False)
+    cpu = signals.get("cpu", False)
+    file_ops = signals.get("file", False) or bool(file_activity)
+    
+    if burst and cpu and file_ops:
+        reasoning = "Concurrent process spawning, sustained CPU usage, and file operations indicate automated execution behavior."
+    elif burst and cpu:
+        reasoning = "Concurrent process spawning and sustained CPU usage indicate automated execution behavior."
+    elif cpu and file_ops:
+        reasoning = "Sustained CPU usage with file activity suggests intensive file processing."
+    elif burst and file_ops:
+        reasoning = "Process spawning with file activity suggests automated file manipulation."
+    elif burst:
+        reasoning = "Rapid process spawning suggests automation or abuse."
+    elif cpu:
+        reasoning = "Sustained high CPU usage suggests resource-intensive execution."
+    elif file_ops:
+        reasoning = "File activity within the signal window suggests rapid file operations."
+    else:
+        reasoning = "Suspicious behavior detected."
+    
+    # === CONFIDENCE SECTION ===
+    if burst and cpu and file_ops:
+        confidence = 0.92
+    elif burst and cpu:
+        confidence = 0.82
+    elif cpu and file_ops:
+        confidence = 0.78
+    elif burst and file_ops:
+        confidence = 0.72
+    elif burst or cpu or file_ops:
+        confidence = 0.55
+    else:
+        confidence = 0.5
+    
+    # === CONCLUSION SECTION ===
+    conclusion = f"{category} ({severity})"
+    
+    return {
+        "process": process,
+        "behavior": behavior,
+        "reasoning": reasoning,
+        "conclusion": conclusion,
+        "confidence": confidence
+    }
 def collect_file_events(directory=MONITORED_DIR):
     """Track file write/create activity in monitored directory."""
     global file_snapshot, file_events
@@ -414,23 +681,44 @@ def run_monitor():
 
                     ppid_display = ppid if ppid is not None else "unknown"
                     signals_text = ", ".join(active_signals)
+                    context = get_process_context(parent)
+                    children_data = analyze_children(parent, current_snapshot, curr_tree)
+                    file_data = analyze_file_activity(file_events, parent, now)
+                    cmdline_value = context.get("cmdline")
+                    cmdline_text = " ".join(cmdline_value) if cmdline_value else "unknown"
                     msg = (
                         f"[THREAT - {category} | {severity}]\n\n"
                         f"Process : {name} (PID {parent})\n"
                         f"Parent  : {parent_name} (PID {ppid_display})\n\n"
                         f"Signals : {signals_text}\n"
                         f"Score   : {score}\n\n"
-                        f"Reason  : {reason}"
+                        f"Reason  : {reason}\n\n"
+                        f"Context :\n"
+                        f"  exe     : {context.get('exe') or 'unknown'}\n"
+                        f"  cmdline : {cmdline_text}\n"
+                        f"  cwd     : {context.get('cwd') or 'unknown'}"
                     )
 
                     emit_console(msg, flush=True)
-                    log_event("THREAT", {
+                    threat_data = {
                         "parent": parent,
                         "score": score,
                         "signals": signals,
                         "category": category,
-                        "severity": severity
-                    }, LOG_FILE)
+                        "severity": severity,
+                        "context": context,
+                        "children": children_data,
+                        "process_name": name
+                    }
+                    if file_data is not None:
+                        threat_data["file_activity"] = file_data
+                    
+                    # Build explanation (Phase 4)
+                    explanation = build_explanation(threat_data)
+                    threat_data.pop("process_name", None)
+                    threat_data["explanation"] = explanation
+                    
+                    log_event("THREAT", threat_data, LOG_FILE)
                     if RUN_MODE == 'live':
                         send_notification("SentinelX Alert", msg)
                 

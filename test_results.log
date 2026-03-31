@@ -1,0 +1,45 @@
+2026-03-31 14:34:31 [INFO] sentinelx_lite: SentinelX-Lite starting...
+2026-03-31 14:34:31 [INFO] sentinelx_lite: Initial snapshot collected with 246 processes.
+2026-03-31 14:34:33 [WARNING] sentinelx_lite: [BURST] PID 117190 spawned 15 NEW processes rapidly
+2026-03-31 14:34:34 [WARNING] sentinelx_lite: [FILE SPIKE] 51 file operations in 5s
+[BURST] PID 117190 spawned 15 NEW processes rapidly
+[FILE SPIKE] 51 file operations in 5s
+[THREAT - CPU_INTENSIVE_PROCESS | MEDIUM]
+
+Process : runner.sh (PID 117167)
+Parent  : zsh (PID 78872)
+
+Signals : cpu, file
+Score   : 7
+
+Reason  : Process consuming sustained high CPU over time
+
+Context :
+  exe     : /usr/bin/bash
+  cmdline : /bin/bash ./runner.sh
+  cwd     : /home/h1t0sm3/sentinalX
+2026-03-31 14:34:36 [WARNING] sentinelx_lite: CPU spike PID=117192 NAME=python3 CPU=97.60%
+CPU spike PID=117192 NAME=python3 CPU=97.60%
+[THREAT - MULTI_VECTOR_BEHAVIOR | HIGH]
+
+Process : python3 (PID 117190)
+Parent  : runner.sh (PID 117167)
+
+Signals : burst, cpu, file
+Score   : 9
+
+Reason  : Process shows combined abnormal behavior: spawning, high CPU, and file activity
+
+Context :
+  exe     : /usr/bin/python3.14
+  cmdline : python3 test_malware_v2.py validate-all
+  cwd     : /home/h1t0sm3/sentinalX
+2026-03-31 14:34:50 [INFO] sentinelx_lite: Signal 15 received, shutting down.
+or 10s
+[V2] Spawning 15 children (1 CPU bound, 14 sleepers)...
+[V2] Spawned 15 children: [117192, 117193, 117194, 117195, 117196, 117197, 117198, 117199, 117200, 117201, 117202, 117203, 117205, 117206, 117207]
+[V2] File activity started...
+[V2] File activity finished
+[V2] CPU worker finished
+=== V2 VALIDATION END ===
+
