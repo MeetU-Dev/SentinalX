@@ -15,6 +15,9 @@ test_results.log
 signal_history_snapshot.json
 report.txt
 test_dir/
+tests/
+scripts/
+trace_debug.py
 
 # OS/editor
 .DS_Store
