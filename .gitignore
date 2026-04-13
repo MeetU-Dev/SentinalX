@@ -12,6 +12,8 @@ env/
 # Runtime/test artifacts
 events.log
 test_results.log
+signal_history_snapshot.json
+report.txt
 test_dir/
 
 # OS/editor
