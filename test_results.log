@@ -1,14 +1,13 @@
-[INIT] isolated eBPF validation run start
-[INFO] events.log lines at start: 491
-[TEST A] Single PID File Ownership
-[TEST A RESULT] PASS | writer_pid=50103 | target_file=True | file_signal_pids=[908, 6251, 7045, 7052, 9506, 45371, 50057, 50072, 50103]
-[TEST B] Multi-Process Isolation
-[TEST B RESULT] FAIL | file_pid=50115 file=False | cpu_pid=50116 file=False
-[TEST C] Multi-Vector Alignment
-[TEST C RESULT] FAIL | pid=50121 | aligned=False | workload_rc=0
-[TEST D] High-Frequency Writes
-[TEST D RESULT] PASS | pid=50147 | sentinel_up=True | file_hit=True
-[TEST E] Background Noise
-[TEST E RESULT] PASS | multivector_pids=[]
-[SUMMARY] all_pass=False | results={'A': True, 'B': False, 'C': False, 'D': True, 'E': True}
-[DECISION GATE] FAIL -> fix file attribution before continuing
+2026-04-13 18:20:06 [INFO] sentinelx_lite: SentinelX-Lite starting...
+could not open bpf map: events, error: Operation not permitted
+2026-04-13 18:20:06 [INFO] sentinelx_lite: Initial snapshot collected with 232 processes.
+2026-04-13 18:20:06 [WARNING] sentinelx_lite: [FILE SPIKE] 410 file operations in 5s
+[eBPF ERROR] Compile failed: Failed to compile BPF module <text>
+[FILE SPIKE] 410 file operations in 5s
+2026-04-13 18:20:09 [WARNING] sentinelx_lite: [BURST] PID 7166 spawned 15 NEW processes rapidly
+2026-04-13 18:20:10 [WARNING] sentinelx_lite: CPU spike PID=7005 NAME=wf-recorder CPU=107.82%
+2026-04-13 18:20:12 [WARNING] sentinelx_lite: [FILE SPIKE] 50 file operations in 5s
+[BURST] PID 7166 spawned 15 NEW processes rapidly
+CPU spike PID=7005 NAME=wf-recorder CPU=107.82%
+[FILE SPIKE] 50 file operations in 5s
+2026-04-13 18:20:18 [INFO] sentinelx_lite: Signal 15 received, shutting down.
