@@ -29,7 +29,7 @@ cpu_alerted = {}  # (pid, create_time) -> alert state (True/False)
 CPU_CONFIRMATION = 3  # cycles
 threat_active = {}  # (pid, create_time) -> True/False (threat state tracking)
 ALERT_THRESHOLD = 5
-FILE_SPIKE_THRESHOLD = 10
+FILE_SPIKE_THRESHOLD = 50
 MONITORED_DIR = 'test_dir'
 TEST_TMP_PREFIX = '/tmp/test_'
 file_events = []  # (event_type, path, timestamp)
@@ -593,6 +593,9 @@ def run_monitor():
                 return None
 
             for event in window_events:
+                if event.get("type") != "exec":
+                    continue
+
                 pid = resolve_event_pid(event)
 
                 if pid is None:
@@ -776,7 +779,22 @@ def run_monitor():
                     if count < FILE_SPIKE_THRESHOLD:
                         continue
 
-                    if pid in current_snapshot:
+                    # Prefer event-time identity from eBPF metadata for short-lived writers.
+                    event_create_time = None
+                    for evt in events:
+                        meta = evt.get("meta") or {}
+                        ct = meta.get("create_time")
+                        if ct is not None:
+                            event_create_time = ct
+                            break
+
+                    if event_create_time is not None:
+                        proc_key = (pid, event_create_time)
+                        pid_identity_cache[pid] = {
+                            "create_time": event_create_time,
+                            "last_seen": now,
+                        }
+                    elif pid in current_snapshot:
                         proc = current_snapshot[pid]
                         proc_key = make_proc_key(proc)
                         pid_identity_cache[pid] = {
