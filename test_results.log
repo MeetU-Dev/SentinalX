@@ -1,13 +1,15 @@
-2026-03-31 14:34:31 [INFO] sentinelx_lite: SentinelX-Lite starting...
-2026-03-31 14:34:31 [INFO] sentinelx_lite: Initial snapshot collected with 246 processes.
-2026-03-31 14:34:33 [WARNING] sentinelx_lite: [BURST] PID 117190 spawned 15 NEW processes rapidly
-2026-03-31 14:34:34 [WARNING] sentinelx_lite: [FILE SPIKE] 51 file operations in 5s
-[BURST] PID 117190 spawned 15 NEW processes rapidly
-[FILE SPIKE] 51 file operations in 5s
+2026-03-31 21:27:49 [INFO] sentinelx_lite: SentinelX-Lite starting...
+2026-03-31 21:27:49 [INFO] sentinelx_lite: Initial snapshot collected with 247 processes.
+2026-03-31 21:27:52 [WARNING] sentinelx_lite: CPU spike PID=19577 NAME=Isolated Web Co CPU=54.20%
+2026-03-31 21:27:52 [WARNING] sentinelx_lite: [BURST] PID 25831 spawned 15 NEW processes rapidly
+2026-03-31 21:27:53 [WARNING] sentinelx_lite: [FILE SPIKE] 50 file operations in 5s
+CPU spike PID=19577 NAME=Isolated Web Co CPU=54.20%
+[BURST] PID 25831 spawned 15 NEW processes rapidly
+[FILE SPIKE] 50 file operations in 5s
 [THREAT - CPU_INTENSIVE_PROCESS | MEDIUM]
 
-Process : runner.sh (PID 117167)
-Parent  : zsh (PID 78872)
+Process : forkserver (PID 7374)
+Parent  : firefox (PID 7203)
 
 Signals : cpu, file
 Score   : 7
@@ -15,15 +17,15 @@ Score   : 7
 Reason  : Process consuming sustained high CPU over time
 
 Context :
-  exe     : /usr/bin/bash
-  cmdline : /bin/bash ./runner.sh
-  cwd     : /home/h1t0sm3/sentinalX
-2026-03-31 14:34:36 [WARNING] sentinelx_lite: CPU spike PID=117192 NAME=python3 CPU=97.60%
-CPU spike PID=117192 NAME=python3 CPU=97.60%
+  exe     : /usr/lib/firefox/firefox
+  cmdline : /usr/lib/firefox/firefox -contentproc -ipcHandle 0 -signalPipe 1 -initialChannelId {e57693f7-de0c-4166-825c-1314e244854d} -parentPid 7203 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1 forkserver
+  cwd     : /home/h1t0sm3
+2026-03-31 21:27:55 [WARNING] sentinelx_lite: CPU spike PID=25833 NAME=python3 CPU=97.30%
+CPU spike PID=25833 NAME=python3 CPU=97.30%
 [THREAT - MULTI_VECTOR_BEHAVIOR | HIGH]
 
-Process : python3 (PID 117190)
-Parent  : runner.sh (PID 117167)
+Process : python3 (PID 25831)
+Parent  : bash (PID 25806)
 
 Signals : burst, cpu, file
 Score   : 9
@@ -32,12 +34,26 @@ Reason  : Process shows combined abnormal behavior: spawning, high CPU, and file
 
 Context :
   exe     : /usr/bin/python3.14
-  cmdline : python3 test_malware_v2.py validate-all
+  cmdline : python3 tests/test_malware_v2.py validate-all
   cwd     : /home/h1t0sm3/sentinalX
-2026-03-31 14:34:50 [INFO] sentinelx_lite: Signal 15 received, shutting down.
-or 10s
-[V2] Spawning 15 children (1 CPU bound, 14 sleepers)...
-[V2] Spawned 15 children: [117192, 117193, 117194, 117195, 117196, 117197, 117198, 117199, 117200, 117201, 117202, 117203, 117205, 117206, 117207]
+[THREAT - CPU_INTENSIVE_PROCESS | MEDIUM]
+
+Process : bash (PID 25806)
+Parent  : zsh (PID 25504)
+
+Signals : cpu, file
+Score   : 7
+
+Reason  : Process consuming sustained high CPU over time
+
+Context :
+  exe     : /usr/bin/bash
+  cmdline : bash scripts/runner.sh
+  cwd     : /home/h1t0sm3/sentinalX
+2026-03-31 21:28:02 [WARNING] sentinelx_lite: CPU spike PID=19577 NAME=Isolated Web Co CPU=89.10%
+2026-03-31 21:28:09 [INFO] sentinelx_lite: Signal 15 received, shutting down.
+CPU spike PID=19577 NAME=Isolated Web Co CPU=89.10%
+, 25842, 25843, 25844, 25845, 25846, 25847]
 [V2] File activity started...
 [V2] File activity finished
 [V2] CPU worker finished
