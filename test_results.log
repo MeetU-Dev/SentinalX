@@ -1,61 +1,14 @@
-2026-03-31 21:27:49 [INFO] sentinelx_lite: SentinelX-Lite starting...
-2026-03-31 21:27:49 [INFO] sentinelx_lite: Initial snapshot collected with 247 processes.
-2026-03-31 21:27:52 [WARNING] sentinelx_lite: CPU spike PID=19577 NAME=Isolated Web Co CPU=54.20%
-2026-03-31 21:27:52 [WARNING] sentinelx_lite: [BURST] PID 25831 spawned 15 NEW processes rapidly
-2026-03-31 21:27:53 [WARNING] sentinelx_lite: [FILE SPIKE] 50 file operations in 5s
-CPU spike PID=19577 NAME=Isolated Web Co CPU=54.20%
-[BURST] PID 25831 spawned 15 NEW processes rapidly
-[FILE SPIKE] 50 file operations in 5s
-[THREAT - CPU_INTENSIVE_PROCESS | MEDIUM]
-
-Process : forkserver (PID 7374)
-Parent  : firefox (PID 7203)
-
-Signals : cpu, file
-Score   : 7
-
-Reason  : Process consuming sustained high CPU over time
-
-Context :
-  exe     : /usr/lib/firefox/firefox
-  cmdline : /usr/lib/firefox/firefox -contentproc -ipcHandle 0 -signalPipe 1 -initialChannelId {e57693f7-de0c-4166-825c-1314e244854d} -parentPid 7203 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1 forkserver
-  cwd     : /home/h1t0sm3
-2026-03-31 21:27:55 [WARNING] sentinelx_lite: CPU spike PID=25833 NAME=python3 CPU=97.30%
-CPU spike PID=25833 NAME=python3 CPU=97.30%
-[THREAT - MULTI_VECTOR_BEHAVIOR | HIGH]
-
-Process : python3 (PID 25831)
-Parent  : bash (PID 25806)
-
-Signals : burst, cpu, file
-Score   : 9
-
-Reason  : Process shows combined abnormal behavior: spawning, high CPU, and file activity
-
-Context :
-  exe     : /usr/bin/python3.14
-  cmdline : python3 tests/test_malware_v2.py validate-all
-  cwd     : /home/h1t0sm3/sentinalX
-[THREAT - CPU_INTENSIVE_PROCESS | MEDIUM]
-
-Process : bash (PID 25806)
-Parent  : zsh (PID 25504)
-
-Signals : cpu, file
-Score   : 7
-
-Reason  : Process consuming sustained high CPU over time
-
-Context :
-  exe     : /usr/bin/bash
-  cmdline : bash scripts/runner.sh
-  cwd     : /home/h1t0sm3/sentinalX
-2026-03-31 21:28:02 [WARNING] sentinelx_lite: CPU spike PID=19577 NAME=Isolated Web Co CPU=89.10%
-2026-03-31 21:28:09 [INFO] sentinelx_lite: Signal 15 received, shutting down.
-CPU spike PID=19577 NAME=Isolated Web Co CPU=89.10%
-, 25842, 25843, 25844, 25845, 25846, 25847]
-[V2] File activity started...
-[V2] File activity finished
-[V2] CPU worker finished
-=== V2 VALIDATION END ===
-
+[INIT] isolated eBPF validation run start
+[INFO] events.log lines at start: 448
+[TEST A] Single PID File Ownership
+[TEST A RESULT] FAIL | writer_pid=41339 | target_file=False | file_signal_pids=[484, 499, 908, 6251, 6430, 6592, 6721, 6768, 6875, 6948, 6961, 6970, 7052, 7357, 7519, 7607, 8890, 9506, 13750, 35522, 41288, 41301]
+[TEST B] Multi-Process Isolation
+[TEST B RESULT] FAIL | file_pid=41358 file=False | cpu_pid=41359 file=False
+[TEST C] Multi-Vector Alignment
+[TEST C RESULT] FAIL | pid=41390 | aligned=False | workload_rc=0
+[TEST D] High-Frequency Writes
+[TEST D RESULT] FAIL | pid=41436 | sentinel_up=True | file_hit=False
+[TEST E] Background Noise
+[TEST E RESULT] PASS | multivector_pids=[]
+[SUMMARY] all_pass=False | results={'A': False, 'B': False, 'C': False, 'D': False, 'E': True}
+[DECISION GATE] FAIL -> fix file attribution before continuing

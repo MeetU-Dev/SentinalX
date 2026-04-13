@@ -41,36 +41,37 @@ def detect_new_processes(prev_snapshot, curr_snapshot):
 
 def detect_cpu_spikes(curr_snapshot, threshold=50.0):
     """Detect sustained CPU spikes with state machine - alert only on transitions."""
-    from sentinalX import cpu_history, CPU_CONFIRMATION, cpu_alerted
+    from sentinalX import cpu_history, CPU_CONFIRMATION, cpu_alerted, make_proc_key
     spikes = []
 
     for pid, proc in curr_snapshot.items():
+        proc_key = make_proc_key(proc)
         cpu = proc.get('cpu_percent', 0.0)
 
         # Initialize state for new PIDs
-        if pid not in cpu_history:
-            cpu_history[pid] = 0
-            cpu_alerted[pid] = False
+        if proc_key not in cpu_history:
+            cpu_history[proc_key] = 0
+            cpu_alerted[proc_key] = False
 
         # Update consecutive high CPU count
         if cpu > threshold:
-            cpu_history[pid] = cpu_history[pid] + 1
+            cpu_history[proc_key] = cpu_history[proc_key] + 1
         else:
-            cpu_history[pid] = 0
+            cpu_history[proc_key] = 0
 
         # Alert only when crossing threshold (not already alerted)
-        if cpu_history[pid] >= CPU_CONFIRMATION and not cpu_alerted[pid]:
+        if cpu_history[proc_key] >= CPU_CONFIRMATION and not cpu_alerted[proc_key]:
             spikes.append({
                 'type': 'cpu_spike',
                 'pid': pid,
                 'name': proc.get('name'),
                 'cpu': cpu,
             })
-            cpu_alerted[pid] = True
+            cpu_alerted[proc_key] = True
 
         # Reset alert state when CPU drops significantly
         if cpu < 30:
-            cpu_alerted[pid] = False
+            cpu_alerted[proc_key] = False
 
     LOGGER.debug('CPU spike events detected: %d', len(spikes))
     return spikes
@@ -112,14 +113,19 @@ def detect_spawn_burst(prev_tree, curr_tree, threshold=5):
     return bursts
 
 
-def calculate_parent_cpu_stats(tree, snapshot):
+def calculate_parent_cpu_stats(tree, snapshot, children_map=None):
     """Calculate comprehensive CPU statistics for all children of each parent."""
     stats = {}
 
     for parent, children in tree.items():
+        if children_map is not None:
+            selected_children = children_map.get(parent, [])
+        else:
+            selected_children = children
+
         cpu_values = [
             snapshot[child].get('cpu_percent', 0.0)
-            for child in children
+            for child in selected_children
             if child in snapshot
         ]
 
